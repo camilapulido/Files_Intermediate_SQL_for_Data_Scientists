@@ -1,0 +1,105 @@
+-- CH.5  WINDOW FUNCTIONS AND ORDERED DATA
+
+--INTRODUCTION TO WINDOW FUNCTIONS: GENERAL IDEA IS THAT WE HAVE A WINDOW 
+--- AND THAT WINDOW ALLOWS US TO LOOK IN A SMALL SET OF ROWS, A SUBGROUP
+-- AND MAKE SOME OPERATION, LIKE APPLY SOME FUNCTION TO THE ROWS IN THAT TABLE
+-- AND THE MOVE THAT TABLE TO ANOTHER SUBGROUP AND APPLU THOSE OPPERATION AND
+-- KEEP REPEATING
+SELECT 
+	DEPARTMENT_ID,
+	LAST_NAME,
+	SALARY,
+	FIRST_VALUE(SALARY) OVER (PARTITION BY DEPARTMENT_ID ORDER BY SALARY)
+FROM
+	DATA_SCI.EMPLOYEES
+
+
+----- NTH_VALUE AND NTILE
+SELECT
+	DEPARTMENT_ID,
+	SALARY,
+	ROUND(AVG(SALARY) OVER (PARTITION BY DEPARTMENT_ID),2)
+FROM
+	DATA_SCI.EMPLOYEES
+
+--- LETS BREAK SALARIES INTO QUARTILE (4 GROUPS) BETWEEN THE DEPARMENT---- 
+SELECT 
+	DEPARTMENT_ID,
+	SALARY,
+	NTILE(4) --- BREAKING INTO QUARTILE 
+	OVER (PARTITION BY DEPARTMENT_ID ORDER BY SALARY DESC)
+	AS QUARTILE
+FROM
+	DATA_SCI.EMPLOYEES
+
+
+SELECT 
+	DEPARTMENT_ID,
+	SALARY,
+	NTH_VALUE(salary,2) --- pull out a specific row value
+	OVER (PARTITION BY DEPARTMENT_ID ORDER BY SALARY DESC)
+	AS QUARTILE
+FROM
+	DATA_SCI.EMPLOYEES
+
+------ RANK, LEAD AND LAG
+---- rank --> specific order that result appear
+select 
+	department_id,
+	last_name,
+	salary,
+	rank() over (partition by department_id order by salary desc) ---within a deparment we are going to rank from the highsest to the lowest salary
+from
+	data_sci.employees
+
+	--- Lead --> is look for n ahead values
+
+select 
+	department_id,
+	last_name,
+	salary,
+	lead(salary,2) over (partition by department_id order by salary desc) ---within a deparment we are going to rank from the highsest to the lowest salary
+from
+	data_sci.employees
+
+
+--- LAG 
+select 
+	department_id,
+	last_name,
+	salary,
+	lag(salary,2) over (partition by department_id order by salary desc) ---within a deparment we are going to rank from the highsest to the lowest salary
+from
+	data_sci.employees
+
+
+------ WIDTH_BUCKET AND CUME_DIST --->  WORKING WITH RAKINGS BUT WITH PERCENTAGES
+SELECT 
+	DEPARTMENT_ID,
+	LAST_NAME,
+	SALARY,
+	WIDTH_BUCKET(SALARY,0,150000,10)
+FROM 
+	DATA_SCI.EMPLOYEES
+
+	--CUME_DIST --- TAKES AN SPECIFICATION OF WHAT YOUR ARE ACCUMULATING OVER -- ACUMULATION DISTRIBUTION
+SELECT 
+	DEPARTMENT_ID,
+	LAST_NAME,
+	SALARY,
+	ROUND((CUME_DIST() OVER (ORDER BY SALARY DESC)*100)::NUMERIC,2) --- CHASTING DOUBLE PRECICION INTO NUMERIC TO BE ABLE TO USE ROUND FUNCTION WITH (::)
+FROM 
+	DATA_SCI.EMPLOYEES
+
+
+---- CHALLENGE
+SELECT 
+	DEPARTMENT_ID,
+	LAST_NAME,
+	SALARY,
+	SUM(SALARY) OVER (PARTITION BY DEPARTMENT_ID)
+FROM
+	DATA_SCI.EMPLOYEES
+
+
+
